@@ -23,12 +23,12 @@ Currently, GoE provides a basic `Matrix` implementation with support for:
 * [x] Matrix printing
 * [x] Matrix addition
 * [x] Matrix multiplication
-* [ ] Scalar multiplication
-* [ ] Matrix subtraction
-* [ ] Transpose
-* [ ] Vector operations
-* [ ] Linear algebra algorithms
-* [ ] Tensor operations
+* [x] Scalar multiplication
+* [x] Matrix subtraction
+* [x] Transpose
+* [x] Vector operations
+* [x] Linear algebra algorithms
+* [x] Tensor operations
 * [ ] Automatic differentiation
 * [ ] Machine learning components
 
@@ -203,7 +203,7 @@ GoE/
 ├── go.mod
 ├── main.go
 │
-├── math/
+├── math/ # The math operations 
 │   └── ...
 │
 └── README.md
@@ -326,70 +326,6 @@ Potential future backends include:
 
 The long-term goal is to provide a unified numerical API while allowing different hardware backends to be explored independently.
 
----
-
-## 🧠 Design Philosophy
-
-### Start from the Fundamentals
-
-GoE is intentionally being built from the bottom up.
-
-Instead of starting directly with neural network APIs, the project begins with the mathematical primitives that machine learning depends on:
-
-```text
-Scalar
-  ↓
-Vector
-  ↓
-Matrix
-  ↓
-Linear Algebra
-  ↓
-Tensor
-  ↓
-Automatic Differentiation
-  ↓
-Optimization
-  ↓
-Machine Learning
-```
-
-This approach makes the architecture easier to understand and provides a foundation for experimenting with different implementations.
-
-### Keep the Core Simple
-
-The current matrix representation is deliberately straightforward:
-
-```go
-type Matrix struct {
-    Rows int
-    Cols int
-    Data []float64
-}
-```
-
-A contiguous data representation makes the memory layout explicit and provides room for future optimization.
-
-### Cross-Platform
-
-GoE is written in Go with portability as one of its design goals.
-
-The same high-level numerical API should eventually be usable across different operating systems and hardware architectures.
-
-### Performance-Oriented
-
-As the project matures, performance will be investigated through:
-
-* Cache-friendly memory layouts
-* Algorithmic optimization
-* Parallel computation
-* SIMD
-* Multithreading
-* Hardware acceleration
-
-Performance will be measured through benchmarks rather than assumed.
-
----
 
 ## 🔬 Why Go?
 
@@ -470,7 +406,7 @@ APIs, data structures, package organization, and implementation details may chan
 
 ---
 
-## 🌱 Vision
+## Vision
 
 GoE aims to explore a simple question:
 
