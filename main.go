@@ -66,7 +66,7 @@ import (
 
 	"github.com/starxsky/GoE/autodiff"
 	gomat "github.com/starxsky/GoE/math"
-	goenet "github.com/starxsky/GoE/network"
+	goenet "github.com/starxsky/GoE/nn"
 )
 
 func lossAct(t1, a13 *autodiff.Node) *autodiff.Node {
