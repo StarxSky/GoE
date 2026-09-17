@@ -11,11 +11,7 @@ The project is currently in its **early development stage**, starting from funda
 ---
 
 ## 🚧 Project Status
-
-**Early Development**
-
-Currently, GoE provides a basic `Matrix` implementation with support for:
-
+This Engine has supported below Manipulations : 
 * [x] Matrix representation
 * [x] Matrix construction
 * [x] Matrix element access
@@ -29,18 +25,22 @@ Currently, GoE provides a basic `Matrix` implementation with support for:
 * [x] Vector operations
 * [x] Linear algebra algorithms
 * [x] Tensor operations
-* [ ] Automatic differentiation
-* [ ] Machine learning components
+* [x] Automatic differentiation
+* [x] Machine learning components
 
 The API and internal data structures are expected to change as the project develops.
 
 ---
 
 ## ✨ Current Features
+## Features
+
+- **`autodiff`** — Reverse-mode automatic differentiation built on a computation graph. Supports scalar `Node` operations (add, sub, mul, div, pow, exp, log, trig, hyperbolic, `min`/`max`, `abs`) with vector, matrix, and recursive gradient retrieval.
+- **`math`** — Dense matrix/ND-tensor layer: multiplication, element-wise ops, transpose, reshape, flatten, slicing (`Iloc`), row extraction, mean/variance, activations (sigmoid, ReLU, squared loss), padding, and 2D convolution (single & batch, with stride/padding). Includes 3D/4D tensor containers.
+- **`network`** — Fully-connected layer-style forward and backward passes (with and without activation), plus an end-layer (loss × activation) backward helper — suitable for training a small MLP with gradient descent.
+
 
 ### Matrix
-
-The current implementation provides a basic matrix abstraction:
 
 ```go
 type Matrix struct {
@@ -158,19 +158,14 @@ A := math.Matrix{
 
 * Go 1.27.1 or compatible Go version
 * A supported operating system
+Go 1.27+ is required.
 
-### Clone
-
-```bash
-git clone https://github.com/StarxSky/GoE.git
-cd GoE
-```
-
-### Run
-
-```bash
+```sh
+go build ./...
 go run .
+go test ./...
 ```
+
 
 ### Build
 
@@ -192,140 +187,56 @@ On Windows:
 go build -o goe.exe .
 ```
 
----
 
-## 📦 Project Structure
 
-The current project structure is intentionally small:
+## Usage
 
-```text
-GoE/
-├── go.mod
-├── main.go
-│
-├── math/ # The math operations 
-│   └── ...
-│
-└── README.md
+### Compute gradients with the autodiff graph
+
+```go
+import "github.com/starxsky/GoE/autodiff"
+
+func main() {
+	x := autodiff.NewNode(2.0)
+	y := autodiff.Exp(autodiff.Mul(x, autodiff.NewNode(3))) // exp(3x)
+	dyDx := y.Gradient(x)                                   // 3 * exp(6)
+}
 ```
 
-The `math` package currently contains the matrix implementation and related numerical operations.
+Use `GradientVector`/`GradientMatrix` for multiple targets, and `GetGraph().NewRecording()` to reset the graph between passes.
 
-The project will gradually be reorganized into more specialized packages as functionality grows.
+### Matrix math
 
-A possible future architecture is:
+```go
+import gomat "github.com/starxsky/GoE/math"
 
-```text
-GoE/
-├── math/
-│   ├── matrix/
-│   ├── vector/
-│   ├── linalg/
-│   └── ...
-│
-├── tensor/
-│
-├── autodiff/
-│
-├── nn/
-│
-└── ...
+a := gomat.Ones(1, 3)
+b := gomat.Ones(3, 1)
+c := gomat.MultiplyMatrix(a, b) // 1x1 matrix
+gomat.Print(c)
 ```
 
----
+### Train a tiny network
 
-## 🛣️ Roadmap
+`main.go` demonstrates a single-epoch training loop: two sigmoid layers forward-pass the data, `EndLayerBackward` computes the loss/activation gradient, `Backward` propagates it, and weights/biases are updated with SGD (learning rate 0.001).
 
-GoE will be developed incrementally, starting from basic numerical primitives.
+## Package Layout
 
-### Phase 1 — Matrix Foundation
-
-* [x] Matrix data structure
-* [x] Matrix construction
-* [x] Element access
-* [x] Element modification
-* [x] Matrix printing
-* [x] Matrix addition
-* [x] Matrix multiplication
-* [ ] Scalar multiplication
-* [ ] Matrix subtraction
-* [ ] Transpose
-* [ ] Element-wise operations
-* [ ] Identity matrix
-* [ ] Zero matrix
-* [ ] Random matrix generation
-* [ ] Matrix slicing
-
-### Phase 2 — Linear Algebra
-
-* [ ] Vector
-* [ ] Dot product
-* [ ] Vector norms
-* [ ] Gaussian elimination
-* [ ] Matrix inverse
-* [ ] Determinant
-* [ ] LU decomposition
-* [ ] QR decomposition
-* [ ] Eigenvalues and eigenvectors
-* [ ] Singular Value Decomposition (SVD)
-
-### Phase 3 — Numerical Computing
-
-* [ ] Numerical differentiation
-* [ ] Numerical integration
-* [ ] Interpolation
-* [ ] Numerical optimization
-* [ ] Statistics
-* [ ] Probability distributions
-* [ ] Random number generation
-
-### Phase 4 — Tensor Computing
-
-* [ ] N-dimensional tensors
-* [ ] Tensor indexing
-* [ ] Reshape
-* [ ] Broadcasting
-* [ ] Reduction operations
-* [ ] Tensor arithmetic
-* [ ] Efficient memory management
-
-### Phase 5 — Automatic Differentiation
-
-* [ ] Computational graph
-* [ ] Forward-mode autodiff
-* [ ] Reverse-mode autodiff
-* [ ] Gradient calculation
-* [ ] Backpropagation
-
-### Phase 6 — Machine Learning
-
-* [ ] Linear regression
-* [ ] Logistic regression
-* [ ] Loss functions
-* [ ] Optimizers
-* [ ] Activation functions
-* [ ] Neural network layers
-* [ ] Training utilities
-* [ ] Model serialization
-
-### Phase 7 — Hardware Acceleration
-
-Potential future backends include:
-
-```text
-                 GoE
-                  │
-        ┌─────────┴─────────┐
-        │                   │
-       CPU                 GPU
-        │                   │
-   ┌────┴────┐         ┌────┴────┐
-   │         │         │         │
- x86-64    ARM64     CUDA      Metal
 ```
-
-The long-term goal is to provide a unified numerical API while allowing different hardware backends to be explored independently.
-
+├── autodiff/    # graph + scalar differentiable ops, gradient API
+│   ├── graph.go # computation graph, UIDs, edges
+│   ├── node.go  # Node type and differentiable operations
+│   └── node_test.go
+├── math/        # matrices, vectors, tensors, convolution
+│   ├── matrix.go    # Matrix / Matrix3d / Matrix4d, factories, printing
+│   ├── multiply.go  # dense matrix multiplication
+│   ├── operations.go# element-wise ops, transpose, reshape, slicing
+│   ├── activation.go# sigmoid, ReLU, squared loss
+│   └── convolve.go  # padding, 2D conv forward, batch conv
+├── network/     # forward/backward passes for a fully-connected layer
+│   └── network.go
+└── main.go      # demo: matrix mult + one training epoch
+```
 
 ## 🔬 Why Go?
 
@@ -439,8 +350,6 @@ Machine Learning
 ## 📄 License
 
 GoE is released under the **MIT License**.
-
-See the [LICENSE](LICENSE) file for the full license text.
 
 Copyright © 2026 StarxSky
 
